@@ -1,0 +1,14 @@
+services:
+
+  db:
+    image: mysql
+    restart: always
+    environment:
+      MYSQL_DATABASE: foodmate
+      MYSQL_ROOT_USER: root
+      MYSQL_USER: user
+      MYSQL_PASSWORD: user
+      MYSQL_ROOT_PASSWORD: root
+    # (this is just an example, not intended to be a production configuration)
+    ports:
+      - "3306:3306"
