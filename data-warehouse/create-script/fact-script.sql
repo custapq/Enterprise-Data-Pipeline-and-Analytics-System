@@ -1,94 +1,63 @@
--- DailyNutrientFact
-create sequence daily_nutrient_fact_seq start with 1 increment by 1 nocache;
-
-create table dailynutrient_fact (
-   fact_id        number primary key,
-   usercode       number(4) not null,
-   date_code      number(4) not null,
-   mealcode       number(4) not null,
-   ntcode         number(4) not null,
-   total_calories number(10,2) not null,
-   total_protein  number(10,2) not null,
-   total_carbs    number(10,2) not null,
-   total_fats     number(10,2) not null,
-   meal_count     number(4) not null,
-   constraint fk_dncf_user foreign key ( usercode )
-      references user_dim ( usercode ),
-   constraint fk_dncf_date foreign key ( date_code )
-      references date_dim ( date_code ),        
-   constraint fk_dncf_meal foreign key ( mealcode )
-      references meal_dim ( mealcode ),
-   constraint fk_dncf_nutrient foreign key ( ntcode )
-      references nutrient_dim ( ntcode )
+CREATE TABLE factmealconsumption (
+   mealdetailcode  NUMBER(8) PRIMARY KEY,
+   mealcode        NUMBER(4) NOT NULL,
+   usercode        NUMBER(4) NOT NULL,
+   fdcode          NUMBER(4) NOT NULL,
+   date_id         NUMBER(8) NOT NULL,
+   total_calories  NUMBER(10,2),
+   total_nutrients NUMBER(10,2),
+   meal_type       VARCHAR2(20) NOT NULL,
+   CONSTRAINT fk_factmeal_user FOREIGN KEY ( usercode )
+      REFERENCES dimuser ( usercode ),
+   CONSTRAINT fk_factmeal_food FOREIGN KEY ( fdcode )
+      REFERENCES dimfood ( fdcode ),
+   CONSTRAINT fk_factmeal_date FOREIGN KEY ( date_id )
+      REFERENCES dimdate ( date_id )
 );
 
-create or replace trigger daily_nutrient_fact_bir before
-   insert on dailynutrient_fact
-   for each row
-begin
-   if :new.fact_id is null then
-      select daily_nutrient_fact_seq.nextval
-        into :new.fact_id
-        from dual;
-   end if;
-end;
-/
 
-create sequence food_category_fact_seq start with 1 increment by 1 nocache;
-
-create table foodcategory_fact (
-   fact_id         number primary key,
-   usercode        number(4) not null, -- FK to UserDim
-   date_code       number(4) not null,      -- FK to DateDim
-   fccode          number(4) not null, -- FK to FoodCategoryDim
-   selection_count number(4) not null,
-   constraint fk_fcsef_user foreign key ( usercode )
-      references user_dim ( usercode ),
-   constraint fk_fcsef_date foreign key ( date_code )
-      references date_dim ( date_code ),
-   constraint fk_fcsef_fc foreign key ( fccode )
-      references foodcategory_dim ( fccode )
+CREATE TABLE factnutrientconsumption (
+   factnut_id     NUMBER(8) PRIMARY KEY, 
+   usercode       NUMBER(4) NOT NULL,
+   fdcode         NUMBER(4) NOT NULL,
+   date_id        NUMBER(8) NOT NULL,
+   ntcode         NUMBER(4) NOT NULL,
+   amount         NUMBER(10,3) NOT NULL,
+   unit           VARCHAR2(20) NOT NULL,
+   CONSTRAINT fk_factnut_user FOREIGN KEY (usercode)
+      REFERENCES dimuser (usercode),
+   CONSTRAINT fk_factnut_food FOREIGN KEY (fdcode)
+      REFERENCES dimfood (fdcode),
+   CONSTRAINT fk_factnut_date FOREIGN KEY (date_id)
+      REFERENCES dimdate (date_id),
+   CONSTRAINT fk_factnut_nutrient FOREIGN KEY (ntcode)
+      REFERENCES dimnutrient (ntcode)
 );
 
-create or replace trigger food_category_fact_bir before
-   insert on foodcategory_fact
-   for each row
-begin
-   if :new.fact_id is null then
-      select food_category_fact_seq.nextval
-        into :new.fact_id
-        from dual;
-   end if;
-end;
-/
 
-create sequence allergy_impact_fact_seq start with 1 increment by 1 nocache;
-
-create table allergyimpact_fact (
-   fact_id           number primary key,
-   usercode          number(4) not null, -- FK to UserDim
-   ingcode           number(4) not null, -- FK to IngredientDim
-   cdcode            number(4) not null, -- FK to ConditionDim
-   date_code         number(4) not null,      -- FK to DateDim
-   consumption_count number(4) not null,
-   constraint fk_aif_user foreign key ( usercode )
-      references user_dim ( usercode ),
-   constraint fk_aif_ing foreign key ( ingcode )
-      references ingredient_dim ( ingcode ),
-   constraint fk_aif_cd foreign key ( cdcode )
-      references condition_dim ( cdcode ),
-   constraint fk_aif_date foreign key ( date_code )
-      references date_dim ( date_code )
+create table factuserhealth (
+   usercode                number(4) primary key,
+   age                     number(4) not null,
+   weight                  number(4) not null,
+   height                  number(4) not null,
+   bmi                     number(5,2) not null,
+   excode                  number(4) not null,
+   total_calories_needed   number(10,2) not null,
+   total_calories_consumed number(10,2) not null,
+   constraint fk_facthealth_user foreign key ( usercode )
+      references dimuser ( usercode ),
+   constraint fk_facthealth_exercise foreign key ( excode )
+      references dimexercise ( excode )
 );
 
-create or replace trigger allergy_impact_fact_bir before
-   insert on allergyimpact_fact
-   for each row
-begin
-   if :new.fact_id is null then
-      select allergy_impact_fact_seq.nextval
-        into :new.fact_id
-        from dual;
-   end if;
-end;
-/
+create table factfavoritefood (
+   usercode   number(4) not null,
+   fdcode     number(4) not null,
+   order_rank number(4) not null,
+   primary key ( usercode,
+                 fdcode ),
+   constraint fk_factfav_user foreign key ( usercode )
+      references dimuser ( usercode ),
+   constraint fk_factfav_food foreign key ( fdcode )
+      references dimfood ( fdcode )
+);
